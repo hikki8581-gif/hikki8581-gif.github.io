@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>From Jair to Vanessa</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --lila:#ede0f7;
+  --lila-mid:#d8c8f3;
+  --lila-dark:#c4aef0;
+  --morado:#7a4ed9;
+  --morado-deep:#4a2e80;
+  --morado-text:#3d2b60;
+  --morado-muted:#a888d0;
+  --rosa:#e8c6dc;
+}
+body{background:#1a1a1a;font-family:'EB Garamond',serif;overflow:hidden;transition:background 1.4s ease;}
+body.carta-abierta{background:var(--lila);overflow-y:auto;overflow-x:hidden;}
+body.carta-abierta::before{content:'';position:fixed;inset:0;background-image:radial-gradient(ellipse 600px 400px at 10% 20%,rgba(196,174,240,0.18) 0%,transparent 70%),radial-gradient(ellipse 500px 500px at 90% 70%,rgba(232,198,220,0.2) 0%,transparent 70%);pointer-events:none;z-index:0;}
+
+/* SOBRE */
+.wrap{width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;perspective:1500px;position:relative;}
+.scene{width:650px;height:420px;position:relative;transition:opacity 0.5s ease,transform 0.5s ease;}
+.scene.oculto{opacity:0;pointer-events:none;transform:scale(0.95);}
+.card{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform 1s ease;}
+.card.girada{transform:rotateY(180deg);}
+.face{position:absolute;width:100%;height:100%;top:0;left:0;backface-visibility:hidden;border-radius:6px;box-shadow:0 25px 60px rgba(0,0,0,0.5);}
+.front{background:var(--lila-mid);overflow:hidden;}
+.flap{position:absolute;top:0;left:0;width:100%;height:160px;background:var(--lila-dark);clip-path:ellipse(50% 100% at 50% 0%);transform-origin:top center;z-index:5;cursor:pointer;}
+.flap.animando{transition:transform 0.8s ease;}
+.flap.abierta{transform:rotateX(-180deg);}
+.carta-borde{position:absolute;left:35px;width:calc(100% - 70px);top:0;height:0;background:#fff;border-radius:4px 4px 0 0;z-index:4;transition:height 0.6s ease;cursor:pointer;}
+.carta-borde.asomada{height:32px;}
+.back{background:var(--lila-mid);transform:rotateY(180deg);position:absolute;padding:24px 28px;}
+.back-header{display:flex;justify-content:space-between;align-items:flex-start;}
+.back-info{color:var(--morado-deep);font-size:20px;line-height:1.6;}
+.back-fecha{font-family:'Cormorant Garamond',serif;color:var(--morado);font-size:15px;font-style:italic;text-align:right;line-height:1.5;}
+.back-fecha span{display:block;font-size:12px;color:var(--morado-muted);font-style:normal;letter-spacing:0.04em;}
+
+/* A gigante — casi del tamaño del sobre, desplazada a la derecha */
+.letra{
+  position:absolute;
+  top:50%; left:58%;
+  transform:translate(-50%,-50%);
+  font-family:'Cormorant Garamond',serif;
+  font-size:520px;
+  color:var(--morado);
+  font-weight:300;
+  line-height:0.8;
+  opacity:0.17;
+  pointer-events:none;
+  letter-spacing:-0.08em;
+  user-select:none;
+}
+
+.corazon-sobre{position:absolute;bottom:-50px;animation:subir linear forwards;pointer-events:none;}
+@keyframes subir{0%{transform:translateY(0) rotate(0deg);opacity:0.8;}100%{transform:translateY(-110vh) rotate(360deg);opacity:0;}}
+
+/* HOJA OVERLAY */
+.hoja-overlay{display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:100;align-items:center;justify-content:center;pointer-events:none;}
+.hoja-overlay.activa{display:flex;}
+.hoja-anim{width:700px;height:40px;background:#fff;border-radius:4px;box-shadow:0 4px 60px rgba(120,80,200,0.18);opacity:0;transition:height 0.9s cubic-bezier(0.16,1,0.3,1),opacity 0.4s ease;}
+.hoja-anim.expandir{height:520px;opacity:1;}
+
+/* PÁGINA */
+.pagina-carta{display:none;padding:60px 0 200px;position:relative;z-index:1;}
+.pagina-carta.visible{display:block;}
+.carta-outer{width:1260px;margin:0 auto;position:relative;}
+
+/* FOTOS */
+.foto{position:absolute;cursor:pointer;opacity:0;z-index:3;transition:opacity 1s ease;}
+.foto.visible{opacity:1;}
+.foto:hover{z-index:10;}
+.foto:hover .foto-img{box-shadow:0 16px 44px rgba(80,40,150,0.3);}
+.foto-img{border-radius:4px;box-shadow:0 4px 20px rgba(100,60,180,0.15);overflow:hidden;transition:box-shadow 0.3s ease;background:var(--lila-mid);}
+.foto-img img{width:100%;height:100%;object-fit:cover;display:block;}
+.foto-caption{text-align:center;font-family:'Cormorant Garamond',serif;font-size:11px;color:var(--morado-muted);margin-top:7px;font-style:italic;}
+
+/* NOTITAS */
+.notita{width:700px;margin:0 auto;opacity:0;transform:translateY(14px);transition:opacity 1s ease,transform 1s ease;position:relative;z-index:2;}
+.notita.visible{opacity:1;transform:none;}
+.notita-inner{background:#fff;border-radius:6px;padding:32px 44px;box-shadow:0 4px 30px rgba(100,60,180,0.1);border-left:3px solid var(--lila-dark);font-family:'Cormorant Garamond',serif;font-size:19px;font-style:italic;color:var(--morado-deep);line-height:1.75;position:relative;}
+.notita-inner::before{content:'✦';position:absolute;top:12px;right:18px;font-size:13px;color:var(--lila-dark);opacity:0.6;}
+.notita-firma{text-align:right;font-size:14px;color:var(--morado-muted);margin-top:12px;font-style:normal;letter-spacing:0.04em;}
+
+/* ORNAMENTOS */
+.ornamento{width:700px;margin:0 auto;text-align:center;font-family:'Cormorant Garamond',serif;color:var(--morado-muted);font-size:18px;letter-spacing:0.3em;opacity:0;padding:24px 0;transition:opacity 1s ease;}
+.ornamento.visible{opacity:1;}
+
+/* VIDEOS */
+.seccion-videos{width:700px;margin:0 auto;opacity:0;transform:translateY(16px);transition:opacity 1s ease,transform 1s ease;}
+.seccion-videos.visible{opacity:1;transform:none;}
+.videos-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.video-slot{position:relative;background:#fff;border-radius:6px;border:1px solid var(--lila-dark);overflow:hidden;box-shadow:0 4px 20px rgba(100,60,180,0.08);}
+.video-slot video{width:100%;height:100%;object-fit:cover;display:block;border-radius:6px;}
+.video-slot.vertical{aspect-ratio:9/16;}
+.video-slot.grande{aspect-ratio:16/9;grid-column:1/-1;}
+
+/* HOJA CARTA */
+.hoja{width:700px;margin:0 auto;background:#fff;border-radius:3px;box-shadow:0 2px 80px rgba(100,60,180,0.1);padding:64px 72px 88px 92px;position:relative;z-index:2;border-left:1.5px solid var(--rosa);opacity:0;transform:translateY(20px);transition:opacity 1.2s ease,transform 1.2s ease;}
+.hoja.visible{opacity:1;transform:none;}
+.hoja::before{content:'♡';position:absolute;bottom:60px;right:50px;font-size:200px;color:var(--lila-mid);opacity:0.18;line-height:1;pointer-events:none;font-family:'Cormorant Garamond',serif;}
+.hoja-inner{position:relative;background-image:repeating-linear-gradient(to bottom,transparent 0px,transparent 38px,#e8d8f8 38px,#e8d8f8 39px);background-position:0 55px;}
+.carta-fecha,.carta-saludo,.carta-parrafo,.carta-firma{opacity:0;transform:translateY(10px);transition:opacity 0.9s ease,transform 0.9s ease;}
+.hoja.revelada .carta-fecha{opacity:1;transform:none;transition-delay:0.1s;}
+.hoja.revelada .carta-saludo{opacity:1;transform:none;transition-delay:0.35s;}
+.hoja.revelada .carta-parrafo{opacity:1;transform:none;transition-delay:0.6s;}
+.hoja.revelada .carta-firma{opacity:1;transform:none;transition-delay:0.85s;}
+.carta-fecha{font-family:'Cormorant Garamond',serif;text-align:right;color:var(--morado-muted);font-size:13px;letter-spacing:0.08em;margin-bottom:36px;position:relative;z-index:1;padding-top:16px;}
+.carta-saludo{font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--morado-deep);font-weight:300;margin-bottom:20px;position:relative;z-index:1;}
+.carta-parrafo{font-size:17px;color:var(--morado-text);line-height:39px;position:relative;z-index:1;}
+.carta-firma{margin-top:52px;text-align:right;font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--morado);font-style:italic;position:relative;z-index:1;line-height:1.6;}
+.carta-firma span{display:block;font-size:13px;color:#c0a8e0;font-style:normal;margin-top:4px;letter-spacing:0.08em;}
+.p-bloque{margin-bottom:0;white-space:pre-line;}
+
+/* FRASE INVISIBLE */
+.pregunta-invisible{color:transparent;border-bottom:1px dashed transparent;cursor:default;letter-spacing:0.02em;transition:color 1.2s ease,border-color 1.2s ease,text-shadow 1.2s ease;display:inline;}
+.pregunta-invisible.revelada{color:var(--morado-deep);border-bottom:1px dashed var(--lila-dark);text-shadow:0 0 18px rgba(122,78,217,0.4);}
+
+/* INPUT */
+.linea-perfecta{display:inline;font-size:17px;color:var(--morado-text);line-height:39px;}
+.blank-wrap{display:inline-flex;align-items:center;gap:4px;vertical-align:middle;}
+#inputPerfecta{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--morado-deep);background:transparent;border:none;border-bottom:1.5px solid var(--lila-dark);outline:none;width:130px;text-align:center;letter-spacing:0.04em;padding:2px 4px;transition:border-color 0.3s ease;}
+#inputPerfecta:focus{border-color:var(--morado);}
+#inputPerfecta.correcto{border-color:var(--morado);color:var(--morado);font-weight:400;}
+
+/* PREGUNTA */
+.seccion-pregunta{width:700px;margin:0 auto;opacity:0;transform:scale(0.6) translateY(40px);pointer-events:none;transition:none;}
+.seccion-pregunta.revelando{animation:preguntaReveal 1.2s cubic-bezier(0.16,1,0.3,1) forwards;pointer-events:auto;}
+@keyframes preguntaReveal{0%{opacity:0;transform:scale(0.6) translateY(40px);}40%{opacity:1;}100%{opacity:1;transform:scale(1) translateY(0);}}
+.pregunta-marco{position:relative;background:#fff;border-radius:12px;padding:60px 48px 56px;box-shadow:0 8px 60px rgba(100,60,180,0.12);border:1px solid rgba(196,174,240,0.4);overflow:hidden;}
+.pregunta-marco::before,.pregunta-marco::after{content:'';position:absolute;width:80px;height:80px;border-color:var(--lila-dark);border-style:solid;opacity:0.5;}
+.pregunta-marco::before{top:16px;left:16px;border-width:1.5px 0 0 1.5px;border-radius:4px 0 0 0;}
+.pregunta-marco::after{bottom:16px;right:16px;border-width:0 1.5px 1.5px 0;border-radius:0 0 4px 0;}
+.deco-heart{position:absolute;font-size:14px;opacity:0.25;pointer-events:none;}
+.pregunta-deco-top{font-size:28px;letter-spacing:16px;color:var(--lila-dark);margin-bottom:28px;display:block;}
+.pregunta-texto{font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:300;color:var(--morado-deep);line-height:1.2;margin-bottom:44px;}
+.pregunta-botonesw{display:flex;gap:24px;justify-content:center;align-items:center;}
+.btn-si,.btn-no{font-family:'Cormorant Garamond',serif;letter-spacing:0.08em;border:none;cursor:pointer;border-radius:50px;transition:all 0.3s ease;}
+.btn-si{background:var(--morado);color:#fff;padding:16px 52px;font-size:22px;box-shadow:0 6px 24px rgba(122,78,217,0.35);}
+.btn-si:hover{background:var(--morado-deep);transform:scale(1.06);}
+.btn-no{background:transparent;color:var(--morado-muted);padding:14px 36px;border:1px solid var(--lila-dark);font-size:18px;}
+
+/* PARTÍCULAS */
+.confeti{position:fixed;pointer-events:none;z-index:910;animation:confetiFall linear forwards;}
+@keyframes confetiFall{0%{transform:translateY(-30px) rotate(0deg) scale(0.5);opacity:0;}10%{opacity:1;}90%{opacity:0.8;}100%{transform:translateY(105vh) rotate(540deg) scale(1.1);opacity:0;}}
+.petal{position:fixed;pointer-events:none;opacity:0;animation:petalCaer linear forwards;z-index:0;}
+@keyframes petalCaer{0%{transform:translateY(-20px) rotate(0deg);opacity:0;}10%{opacity:0.6;}90%{opacity:0.4;}100%{transform:translateY(100vh) rotate(720deg) translateX(40px);opacity:0;}}
+.heart-float{position:fixed;pointer-events:none;opacity:0;animation:heartRise linear forwards;z-index:1;}
+@keyframes heartRise{0%{transform:translateY(0) scale(0.6);opacity:0;}15%{opacity:0.7;}85%{opacity:0.4;}100%{transform:translateY(-60vh) scale(1.1);opacity:0;}}
+.flash-corazon{position:fixed;inset:0;pointer-events:none;z-index:50;animation:flashOut 0.9s ease forwards;}
+@keyframes flashOut{0%{background:rgba(196,174,240,0.4);}100%{background:transparent;}}
+
+/* LIGHTBOX */
+.lb-overlay{display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(30,10,60,0.65);z-index:500;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity 0.4s ease;}
+.lb-overlay.activo{display:flex;opacity:1;}
+.lb-box{background:var(--lila-mid);border-radius:8px;box-shadow:0 30px 80px rgba(60,20,120,0.4);display:flex;align-items:center;justify-content:center;flex-direction:column;cursor:default;transform:scale(0.92);transition:transform 0.4s cubic-bezier(0.16,1,0.3,1);overflow:hidden;}
+.lb-overlay.activo .lb-box{transform:scale(1);}
+.lb-box img{width:100%;max-width:500px;max-height:80vh;object-fit:contain;border-radius:8px;}
+.lb-caption{margin-top:8px;font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--morado);font-style:italic;padding:0 20px 16px;}
+
+/* ══════════════════════════════════════
+   PANTALLA DEL SÍ — experiencia completa
+══════════════════════════════════════ */
+.si-universe{
+  display:none;
+  position:fixed;inset:0;z-index:950;
+  overflow:hidden;
+  background:#0d0718;
+}
+.si-universe.activo{ display:block; }
+
+/* Estrellas de fondo */
+.si-stars{position:absolute;inset:0;overflow:hidden;}
+.si-star{
+  position:absolute;border-radius:50%;
+  background:#fff;
+  animation:twinkle linear infinite;
+}
+@keyframes twinkle{
+  0%,100%{opacity:0.1;transform:scale(0.8);}
+  50%{opacity:0.9;transform:scale(1.2);}
+}
+
+/* Orbes de luz */
+.si-orb{
+  position:absolute;border-radius:50%;
+  filter:blur(80px);
+  animation:orbPulse ease-in-out infinite alternate;
+  pointer-events:none;
+}
+@keyframes orbPulse{0%{transform:scale(0.9) translate(-2%,-2%);}100%{transform:scale(1.1) translate(2%,2%);}}
+
+/* Contenido central */
+.si-content{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;
+  z-index:2;
+  opacity:0;
+  animation:siContentIn 1.2s 0.6s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+@keyframes siContentIn{
+  0%{opacity:0;transform:translateY(40px) scale(0.9);}
+  100%{opacity:1;transform:none;}
+}
+
+.si-corazon-grande{
+  font-size:100px;
+  line-height:1;
+  margin-bottom:24px;
+  display:block;
+  animation:heartBeat 1.4s 1.2s ease infinite;
+  filter:drop-shadow(0 0 30px rgba(200,120,255,0.8));
+}
+@keyframes heartBeat{
+  0%,100%{transform:scale(1);}
+  14%{transform:scale(1.18);}
+  28%{transform:scale(1);}
+  42%{transform:scale(1.12);}
+  56%{transform:scale(1);}
+}
+
+.si-titulo{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(52px,8vw,96px);
+  font-weight:300;
+  color:#fff;
+  letter-spacing:-0.01em;
+  line-height:1;
+  margin-bottom:16px;
+  text-shadow:0 0 60px rgba(200,150,255,0.5);
+}
+.si-titulo em{
+  display:block;
+  font-style:italic;
+  font-size:0.55em;
+  color:rgba(220,190,255,0.85);
+  letter-spacing:0.08em;
+  margin-top:8px;
+}
+
+.si-separador{
+  width:120px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(200,160,255,0.6),transparent);
+  margin:28px auto;
+}
+
+.si-texto{
+  font-family:'Cormorant Garamond',serif;
+  font-size:22px;font-style:italic;
+  color:rgba(230,210,255,0.8);
+  line-height:1.7;
+  max-width:460px;
+  margin-bottom:48px;
+}
+
+.si-cerrar{
+  font-family:'Cormorant Garamond',serif;
+  font-size:13px;letter-spacing:0.12em;
+  color:rgba(200,170,255,0.45);
+  background:none;border:none;cursor:pointer;
+  text-transform:uppercase;
+  transition:color 0.3s ease;
+  padding:8px 20px;
+}
+.si-cerrar:hover{color:rgba(220,190,255,0.8);}
+
+/* Corazones flotantes en la pantalla del sí */
+.si-heart-fly{
+  position:absolute;
+  pointer-events:none;
+  font-size:20px;
+  animation:siHeartFly linear forwards;
+  z-index:3;
+}
+@keyframes siHeartFly{
+  0%{opacity:0;transform:translateY(0) rotate(0deg) scale(0.4);}
+  10%{opacity:1;}
+  90%{opacity:0.7;}
+  100%{opacity:0;transform:translateY(-90vh) rotate(380deg) scale(1.2) translateX(30px);}
+}
+
+/* Anillo de luz que explota al abrir */
+.si-ring{
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%) scale(0);
+  width:300px;height:300px;
+  border-radius:50%;
+  border:2px solid rgba(200,150,255,0.6);
+  animation:ringExpand 1.6s ease-out forwards;
+  pointer-events:none;
+  z-index:1;
+}
+.si-ring:nth-child(2){animation-delay:0.3s;border-color:rgba(240,180,255,0.4);}
+.si-ring:nth-child(3){animation-delay:0.6s;border-color:rgba(255,200,240,0.25);}
+@keyframes ringExpand{
+  0%{transform:translate(-50%,-50%) scale(0);opacity:1;}
+  100%{transform:translate(-50%,-50%) scale(8);opacity:0;}
+}
+
+/* FOTOS LATIENDO — BPM dinámico via CSS variable */
+:root{
+  --beat-dur: 0.531s; /* 113 BPM por defecto */
+}
+/* Beat en .foto-img — separado del fade-in que está en .foto */
+@keyframes fotoBeat {
+  0%,100%{ transform: scale(1); box-shadow: 0 4px 20px rgba(100,60,180,0.15); }
+  8%{      transform: scale(1.05); box-shadow: 0 8px 28px rgba(100,60,180,0.28); }
+  18%{     transform: scale(1); }
+  26%{     transform: scale(1.028); box-shadow: 0 6px 22px rgba(100,60,180,0.22); }
+  36%{     transform: scale(1); }
+}
+/* El beat va en foto-img, delay 0 siempre para sincronía perfecta */
+.foto-img.beating {
+  animation: fotoBeat var(--beat-dur) ease-in-out infinite;
+  animation-delay: 0s !important;
+}
+
+
+/* ══ DECORACIÓN CARTA ══ */
+/* Drop cap en el primer párrafo */
+.p-bloque:first-child::first-letter{
+  font-family:'Cormorant Garamond',serif;
+  font-size:4.2em;
+  font-weight:300;
+  color:var(--morado);
+  float:left;
+  line-height:0.78;
+  margin-right:6px;
+  margin-top:6px;
+  padding-bottom:2px;
+}
+/* Esquinas decorativas de la hoja */
+.hoja-deco-tl,.hoja-deco-tr,.hoja-deco-bl,.hoja-deco-br{
+  position:absolute;width:48px;height:48px;opacity:0.35;pointer-events:none;
+}
+.hoja-deco-tl{top:18px;left:18px;}
+.hoja-deco-tr{top:18px;right:18px;transform:scaleX(-1);}
+.hoja-deco-bl{bottom:18px;left:18px;transform:scaleY(-1);}
+.hoja-deco-br{bottom:18px;right:18px;transform:scale(-1);}
+/* Línea ornamental bajo el saludo */
+.carta-saludo::after{
+  content:'';
+  display:block;
+  width:80px;height:1px;
+  background:linear-gradient(90deg,var(--morado),transparent);
+  margin-top:14px;
+  opacity:0.35;
+}
+/* Sello de cera en esquina firma */
+.sello-cera{
+  position:absolute;right:68px;bottom:88px;
+  width:52px;height:52px;
+  background:radial-gradient(circle at 38% 35%, #a06cd5 0%, #7a4ed9 45%, #4a2e80 100%);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;
+  box-shadow:0 3px 12px rgba(100,60,180,0.3),inset 0 1px 3px rgba(255,255,255,0.2);
+  opacity:0.7;
+  pointer-events:none;
+  z-index:2;
+}
+/* Marca de agua floral en el centro de la carta */
+.hoja-watermark{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  font-size:340px;
+  line-height:1;
+  opacity:0.028;
+  pointer-events:none;
+  font-family:'Cormorant Garamond',serif;
+  color:var(--morado);
+  user-select:none;
+  z-index:0;
+}
+/* Línea lateral decorativa */
+.hoja::after{
+  content:'';
+  position:absolute;
+  top:40px;bottom:40px;
+  left:28px;
+  width:1.5px;
+  background:linear-gradient(to bottom, transparent, var(--lila-dark) 20%, var(--lila-dark) 80%, transparent);
+  opacity:0.4;
+  pointer-events:none;
+}
+
+
+/* ══ FONDO PANTALLA SOBRE ══ */
+.wrap{
+  background: radial-gradient(ellipse 80% 70% at 50% 55%, #1e0a3c 0%, #0d0518 60%, #06030f 100%);
+}
+/* Partículas de polvo estelar fijas (SVG inline via pseudo) */
+.wrap::before{
+  content:'';
+  position:absolute;inset:0;
+  background-image:
+    radial-gradient(1px 1px at 12% 18%, rgba(196,174,240,0.55) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 28% 72%, rgba(232,198,220,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 45% 35%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 62% 14%, rgba(196,174,240,0.6) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 78% 58%, rgba(200,160,255,0.45) 0%, transparent 100%),
+    radial-gradient(1px 1px at 88% 28%, rgba(255,255,255,0.35) 0%, transparent 100%),
+    radial-gradient(1px 1px at 6% 88%, rgba(232,198,220,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 92% 82%, rgba(196,174,240,0.5) 0%, transparent 100%),
+    radial-gradient(2px 2px at 35% 90%, rgba(200,160,255,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 54% 62%, rgba(255,255,255,0.25) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 18% 47%, rgba(196,174,240,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 70% 88%, rgba(255,200,240,0.35) 0%, transparent 100%);
+  pointer-events:none;
+  z-index:0;
+}
+/* Orbe de luz morada detrás del sobre */
+.wrap::after{
+  content:'';
+  position:absolute;
+  width:700px;height:500px;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  background:radial-gradient(ellipse, rgba(100,50,180,0.22) 0%, rgba(80,30,160,0.1) 40%, transparent 70%);
+  pointer-events:none;
+  z-index:0;
+  animation:glowPulse 4s ease-in-out infinite alternate;
+}
+@keyframes glowPulse{0%{opacity:0.7;transform:translate(-50%,-50%) scale(0.95);}100%{opacity:1;transform:translate(-50%,-50%) scale(1.05);}}
+
+/* Ornamentos en las 4 esquinas de la pantalla del sobre */
+.sobre-corner{
+  position:fixed;pointer-events:none;z-index:1;
+  opacity:0.22;
+}
+.sobre-corner svg{ display:block; }
+.sobre-corner.tl{top:20px;left:20px;}
+.sobre-corner.tr{top:20px;right:20px;transform:scaleX(-1);}
+.sobre-corner.bl{bottom:20px;left:20px;transform:scaleY(-1);}
+.sobre-corner.br{bottom:20px;right:20px;transform:scale(-1,-1);}
+
+/* Texto sutil arriba */
+.sobre-titulo{
+  position:fixed;top:32px;left:50%;transform:translateX(-50%);
+  font-family:'Cormorant Garamond',serif;
+  font-size:12px;letter-spacing:0.35em;
+  color:rgba(196,174,240,0.45);
+  text-transform:uppercase;
+  pointer-events:none;z-index:2;
+  white-space:nowrap;
+}
+/* Indicador sutil "haz clic" en el flap */
+.sobre-hint{
+  position:fixed;bottom:36px;left:50%;transform:translateX(-50%);
+  font-family:'Cormorant Garamond',serif;
+  font-size:13px;letter-spacing:0.18em;font-style:italic;
+  color:rgba(196,174,240,0.3);
+  pointer-events:none;z-index:2;
+  animation:hintPulse 2.5s ease-in-out infinite;
+}
+@keyframes hintPulse{0%,100%{opacity:0.3;}50%{opacity:0.7;}}
+
+/* Líneas decorativas laterales a los lados del sobre */
+.sobre-linea{
+  position:fixed;top:50%;transform:translateY(-50%);
+  pointer-events:none;z-index:1;
+  opacity:0.18;
+}
+.sobre-linea.izq{left:40px;}
+.sobre-linea.der{right:40px;transform:translateY(-50%) scaleX(-1);}
+
+/* ══ FONDO PÁGINA CARTA ══ */
+/* Patrón de puntos sutiles en el fondo */
+body.carta-abierta{
+  background:
+    radial-gradient(circle 1px at center, rgba(196,174,240,0.25) 0%, transparent 100%) 0 0 / 28px 28px,
+    linear-gradient(135deg, #ede0f7 0%, #e4d3f5 50%, #ede0f7 100%);
+}
+/* Borde superior decorativo fijo */
+.carta-topbar{
+  position:fixed;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,
+    transparent 0%,
+    rgba(196,174,240,0.4) 10%,
+    var(--morado) 30%,
+    rgba(232,198,220,0.9) 50%,
+    var(--morado) 70%,
+    rgba(196,174,240,0.4) 90%,
+    transparent 100%);
+  z-index:10;display:none;pointer-events:none;
+}
+.carta-topbar.visible{display:block;}
+
+/* Ornamentos fijos laterales en la página de carta */
+.carta-lateral{
+  position:fixed;top:50%;
+  pointer-events:none;z-index:0;
+  opacity:0;transition:opacity 1s ease;
+}
+.carta-lateral.visible{opacity:0.12;}
+.carta-lateral.izq{left:16px;transform:translateY(-50%);}
+.carta-lateral.der{right:16px;transform:translateY(-50%) scaleX(-1);}
+
+/* Separadores de sección más elegantes — ornamento entre notitas */
+.sep-floral{
+  width:700px;margin:0 auto;
+  text-align:center;
+  font-family:'Cormorant Garamond',serif;
+  color:var(--morado-muted);
+  font-size:22px;
+  letter-spacing:0.5em;
+  opacity:0;
+  padding:20px 0;
+  transition:opacity 1s ease;
+  position:relative;z-index:2;
+}
+.sep-floral.visible{opacity:1;}
+.sep-floral::before,.sep-floral::after{
+  content:'';display:inline-block;
+  width:60px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--lila-dark));
+  vertical-align:middle;margin:0 12px;
+}
+.sep-floral::after{
+  background:linear-gradient(90deg,var(--lila-dark),transparent);
+}
+
+/* Foto marco decorativo extra */
+.foto-img{
+  border:1.5px solid rgba(196,174,240,0.3);
+}
+/* Sombra más bonita en fotos */
+.foto-img img{
+  filter:brightness(1.02) contrast(1.02);
+}
+
+</style>
+</head>
+<body>
+
+<!-- SOBRE -->
+<!-- Ornamentos en esquinas de pantalla -->
+<div class="sobre-corner tl" id="cornerTL">
+  <svg width="90" height="90" viewBox="0 0 90 90" fill="none">
+    <path d="M4 86 C4 44 44 4 86 4" stroke="#c4aef0" stroke-width="1.2" fill="none"/>
+    <path d="M14 76 C14 50 50 14 76 14" stroke="#c4aef0" stroke-width="0.6" fill="none" stroke-dasharray="3 4"/>
+    <circle cx="8" cy="82" r="2.5" fill="#a888d0"/>
+    <circle cx="82" cy="8" r="2.5" fill="#a888d0"/>
+    <circle cx="4" cy="86" r="1.2" fill="#c4aef0" opacity="0.5"/>
+    <circle cx="45" cy="45" r="1.5" fill="#c4aef0" opacity="0.4"/>
+    <path d="M28 62 Q45 45 62 28" stroke="#d8c8f3" stroke-width="0.5" fill="none" opacity="0.5"/>
+  </svg>
+</div>
+<div class="sobre-corner tr" id="cornerTR">
+  <svg width="90" height="90" viewBox="0 0 90 90" fill="none">
+    <path d="M4 86 C4 44 44 4 86 4" stroke="#c4aef0" stroke-width="1.2" fill="none"/>
+    <path d="M14 76 C14 50 50 14 76 14" stroke="#c4aef0" stroke-width="0.6" fill="none" stroke-dasharray="3 4"/>
+    <circle cx="8" cy="82" r="2.5" fill="#a888d0"/>
+    <circle cx="82" cy="8" r="2.5" fill="#a888d0"/>
+    <circle cx="45" cy="45" r="1.5" fill="#c4aef0" opacity="0.4"/>
+    <path d="M28 62 Q45 45 62 28" stroke="#d8c8f3" stroke-width="0.5" fill="none" opacity="0.5"/>
+  </svg>
+</div>
+<div class="sobre-corner bl" id="cornerBL">
+  <svg width="90" height="90" viewBox="0 0 90 90" fill="none">
+    <path d="M4 86 C4 44 44 4 86 4" stroke="#c4aef0" stroke-width="1.2" fill="none"/>
+    <path d="M14 76 C14 50 50 14 76 14" stroke="#c4aef0" stroke-width="0.6" fill="none" stroke-dasharray="3 4"/>
+    <circle cx="8" cy="82" r="2.5" fill="#a888d0"/>
+    <circle cx="82" cy="8" r="2.5" fill="#a888d0"/>
+    <circle cx="45" cy="45" r="1.5" fill="#c4aef0" opacity="0.4"/>
+    <path d="M28 62 Q45 45 62 28" stroke="#d8c8f3" stroke-width="0.5" fill="none" opacity="0.5"/>
+  </svg>
+</div>
+<div class="sobre-corner br" id="cornerBR">
+  <svg width="90" height="90" viewBox="0 0 90 90" fill="none">
+    <path d="M4 86 C4 44 44 4 86 4" stroke="#c4aef0" stroke-width="1.2" fill="none"/>
+    <path d="M14 76 C14 50 50 14 76 14" stroke="#c4aef0" stroke-width="0.6" fill="none" stroke-dasharray="3 4"/>
+    <circle cx="8" cy="82" r="2.5" fill="#a888d0"/>
+    <circle cx="82" cy="8" r="2.5" fill="#a888d0"/>
+    <circle cx="45" cy="45" r="1.5" fill="#c4aef0" opacity="0.4"/>
+    <path d="M28 62 Q45 45 62 28" stroke="#d8c8f3" stroke-width="0.5" fill="none" opacity="0.5"/>
+  </svg>
+</div>
+<!-- Líneas laterales decorativas -->
+<div class="sobre-linea izq">
+  <svg width="24" height="320" viewBox="0 0 24 320" fill="none">
+    <line x1="12" y1="0" x2="12" y2="320" stroke="#c4aef0" stroke-width="0.8" stroke-dasharray="4 6"/>
+    <circle cx="12" cy="40" r="2" fill="#c4aef0"/>
+    <circle cx="12" cy="160" r="3" fill="#a888d0"/>
+    <circle cx="12" cy="280" r="2" fill="#c4aef0"/>
+    <path d="M6 100 Q12 90 18 100 Q12 110 6 100Z" fill="#c4aef0" opacity="0.5"/>
+    <path d="M6 220 Q12 210 18 220 Q12 230 6 220Z" fill="#c4aef0" opacity="0.5"/>
+  </svg>
+</div>
+<div class="sobre-linea der">
+  <svg width="24" height="320" viewBox="0 0 24 320" fill="none">
+    <line x1="12" y1="0" x2="12" y2="320" stroke="#c4aef0" stroke-width="0.8" stroke-dasharray="4 6"/>
+    <circle cx="12" cy="40" r="2" fill="#c4aef0"/>
+    <circle cx="12" cy="160" r="3" fill="#a888d0"/>
+    <circle cx="12" cy="280" r="2" fill="#c4aef0"/>
+    <path d="M6 100 Q12 90 18 100 Q12 110 6 100Z" fill="#c4aef0" opacity="0.5"/>
+    <path d="M6 220 Q12 210 18 220 Q12 230 6 220Z" fill="#c4aef0" opacity="0.5"/>
+  </svg>
+</div>
+<!-- Título sutil arriba -->
+<div class="sobre-titulo">✦ &nbsp; una carta para ti &nbsp; ✦</div>
+<!-- Hint abajo -->
+<div class="sobre-hint" id="sobreHint">abre el sobre ↑</div>
+
+<div class="wrap" id="wrap">
+  <div class="scene" id="scene">
+    <div class="card" id="card">
+      <div class="face front"><div class="flap" id="flap"></div></div>
+      <div class="face back">
+        <div class="back-header">
+          <div class="back-info">From: Jair<br>To: Glendis Vanessa Rocha Tercero</div>
+          <div class="back-fecha">17 / 17</div>
+        </div>
+        <div class="letra">A</div>
+      </div>
+    </div>
+    <div class="carta-borde" id="cartaBorde"></div>
+  </div>
+</div>
+
+<div class="hoja-overlay" id="hojaOverlay"><div class="hoja-anim" id="hojaAnim"></div></div>
+
+<div class="lb-overlay" id="lbOverlay">
+  <div class="lb-box"><img id="lbImg" src="" alt=""><div class="lb-caption" id="lbCaption"></div></div>
+</div>
+
+<!-- ══ UNIVERSO DEL SÍ ══ -->
+<div class="si-universe" id="siUniverse">
+  <div class="si-stars" id="siStars"></div>
+  <!-- orbes de luz -->
+  <div class="si-orb" style="width:600px;height:600px;top:-100px;left:-100px;background:radial-gradient(circle,rgba(130,60,200,0.35),transparent 70%);animation-duration:7s;"></div>
+  <div class="si-orb" style="width:500px;height:500px;bottom:-80px;right:-80px;background:radial-gradient(circle,rgba(200,80,180,0.3),transparent 70%);animation-duration:9s;animation-delay:-3s;"></div>
+  <div class="si-orb" style="width:350px;height:350px;top:40%;left:55%;background:radial-gradient(circle,rgba(100,120,255,0.2),transparent 70%);animation-duration:11s;animation-delay:-5s;"></div>
+  <!-- anillos de expansión -->
+  <div class="si-ring"></div>
+  <div class="si-ring"></div>
+  <div class="si-ring"></div>
+  <!-- contenido -->
+  <div class="si-content">
+    <span class="si-corazon-grande">💜</span>
+    <div class="si-titulo">
+      ¡Yupiiiiiii!
+      <em>Glendis Vanessa Rocha Tercero</em>
+    </div>
+    <div class="si-separador"></div>
+    <div class="si-texto">
+      Te adoroooooo muchisisisisisimo.<br>
+      Eres lo mejor que me ha pasado,<br>
+      y ahora también eres mi novia. 💜
+    </div>
+    <button class="si-cerrar" id="siCerrar">· cerrar ·</button>
+  </div>
+</div>
+
+<!-- ══════════════ PÁGINA CARTA ══════════════ -->
+<!-- Barra decorativa superior (carta abierta) -->
+<div class="carta-topbar" id="cartaTopbar"></div>
+<!-- Ornamentos laterales fijos -->
+<div class="carta-lateral izq" id="lateralIzq">
+  <svg width="32" height="600" viewBox="0 0 32 600" fill="none">
+    <line x1="16" y1="0" x2="16" y2="600" stroke="#7a4ed9" stroke-width="0.8"/>
+    <circle cx="16" cy="80" r="3" fill="#a888d0"/>
+    <circle cx="16" cy="200" r="2" fill="#c4aef0"/>
+    <circle cx="16" cy="300" r="4" fill="#7a4ed9" opacity="0.6"/>
+    <circle cx="16" cy="400" r="2" fill="#c4aef0"/>
+    <circle cx="16" cy="520" r="3" fill="#a888d0"/>
+    <path d="M8 140 Q16 128 24 140 Q16 152 8 140Z" fill="#a888d0" opacity="0.6"/>
+    <path d="M8 260 Q16 248 24 260 Q16 272 8 260Z" fill="#a888d0" opacity="0.6"/>
+    <path d="M8 360 Q16 348 24 360 Q16 372 8 360Z" fill="#a888d0" opacity="0.6"/>
+    <path d="M8 460 Q16 448 24 460 Q16 472 8 460Z" fill="#a888d0" opacity="0.6"/>
+  </svg>
+</div>
+<div class="carta-lateral der" id="lateralDer">
+  <svg width="32" height="600" viewBox="0 0 32 600" fill="none">
+    <line x1="16" y1="0" x2="16" y2="600" stroke="#7a4ed9" stroke-width="0.8"/>
+    <circle cx="16" cy="80" r="3" fill="#a888d0"/>
+    <circle cx="16" cy="200" r="2" fill="#c4aef0"/>
+    <circle cx="16" cy="300" r="4" fill="#7a4ed9" opacity="0.6"/>
+    <circle cx="16" cy="400" r="2" fill="#c4aef0"/>
+    <circle cx="16" cy="520" r="3" fill="#a888d0"/>
+    <path d="M8 140 Q16 128 24 140 Q16 152 8 140Z" fill="#a888d0" opacity="0.6"/>
+    <path d="M8 260 Q16 248 24 260 Q16 272 8 260Z" fill="#a888d0" opacity="0.6"/>
+    <path d="M8 360 Q16 348 24 360 Q16 372 8 360Z" fill="#a888d0" opacity="0.6"/>
+    <path d="M8 460 Q16 448 24 460 Q16 472 8 460Z" fill="#a888d0" opacity="0.6"/>
+  </svg>
+</div>
+
+<div class="pagina-carta" id="paginaCarta">
+  <div class="carta-outer">
+
+    <!-- FOTOS IZQUIERDA -->
+    <div class="foto" style="top:30px;left:48px;transform:rotate(-7deg)" data-caption="Quizás"><div class="foto-img" style="width:140px;height:176px;"><img src="photo1.jpg" alt=""></div><div class="foto-caption">Quizás</div></div>
+    <div class="foto" style="top:400px;left:14px;transform:rotate(4deg)" data-caption="Universo"><div class="foto-img" style="width:122px;height:155px;"><img src="photo2.jpg" alt=""></div><div class="foto-caption">Universo</div></div>
+    <div class="foto" style="top:760px;left:58px;transform:rotate(-11deg)" data-caption="Idioteces"><div class="foto-img" style="width:146px;height:184px;"><img src="photo3.jpg" alt=""></div><div class="foto-caption">Idioteces</div></div>
+    <div class="foto" style="top:1160px;left:22px;transform:rotate(6deg)" data-caption="Especial"><div class="foto-img" style="width:128px;height:162px;"><img src="photo4.jpg" alt=""></div><div class="foto-caption">Especial</div></div>
+    <div class="foto" style="top:1560px;left:48px;transform:rotate(-5deg)" data-caption="Respuestas"><div class="foto-img" style="width:136px;height:172px;"><img src="photo5.jpg" alt=""></div><div class="foto-caption">Respuestas</div></div>
+    <div class="foto" style="top:1960px;left:10px;transform:rotate(9deg)" data-caption="Estúpido"><div class="foto-img" style="width:118px;height:150px;"><img src="photo6.jpg" alt=""></div><div class="foto-caption">Estúpido</div></div>
+    <div class="foto" style="top:2360px;left:44px;transform:rotate(-8deg)" data-caption="Siete"><div class="foto-img" style="width:130px;height:165px;"><img src="photo7.jpg" alt=""></div><div class="foto-caption">Siete</div></div>
+    <div class="foto" style="top:2760px;left:18px;transform:rotate(5deg)" data-caption="Sexo"><div class="foto-img" style="width:124px;height:158px;"><img src="photo8.jpg" alt=""></div><div class="foto-caption">Sexo</div></div>
+    <div class="foto" style="top:3160px;left:52px;transform:rotate(-10deg)" data-caption="Estupefacto"><div class="foto-img" style="width:138px;height:175px;"><img src="photo9.jpeg" alt=""></div><div class="foto-caption">Estupefacto</div></div>
+
+    <!-- FOTOS DERECHA -->
+    <div class="foto" style="top:55px;right:40px;transform:rotate(8deg)" data-caption="Rocha"><div class="foto-img" style="width:144px;height:182px;"><img src="photo10.jpeg" alt=""></div><div class="foto-caption">Rocha</div></div>
+    <div class="foto" style="top:450px;right:8px;transform:rotate(-5deg)" data-caption="Motivos"><div class="foto-img" style="width:124px;height:158px;"><img src="photo11.jpeg" alt=""></div><div class="foto-caption">Motivos</div></div>
+    <div class="foto" style="top:840px;right:60px;transform:rotate(12deg)" data-caption="Incapaz"><div class="foto-img" style="width:150px;height:190px;"><img src="photo12.jpeg" alt=""></div><div class="foto-caption">Incapaz</div></div>
+    <div class="foto" style="top:1240px;right:20px;transform:rotate(-9deg)" data-caption="Natural"><div class="foto-img" style="width:132px;height:168px;"><img src="photo13.jpeg" alt=""></div><div class="foto-caption">Natural</div></div>
+    <div class="foto" style="top:1640px;right:50px;transform:rotate(4deg)" data-caption="Oxidado"><div class="foto-img" style="width:138px;height:174px;"><img src="photo14.jpeg" alt=""></div><div class="foto-caption">Oxidado</div></div>
+    <div class="foto" style="top:2040px;right:24px;transform:rotate(-7deg)" data-caption="Vanessa"><div class="foto-img" style="width:122px;height:155px;"><img src="photo15.jpg" alt=""></div><div class="foto-caption">Vanessa</div></div>
+    <div class="foto" style="top:2440px;right:44px;transform:rotate(6deg)" data-caption="Infinito"><div class="foto-img" style="width:140px;height:178px;"><img src="photo16.jpg" alt=""></div><div class="foto-caption">Infinito</div></div>
+    <div class="foto" style="top:2840px;right:16px;transform:rotate(-4deg)" data-caption="Aishite"><div class="foto-img" style="width:128px;height:162px;"><img src="photo17.jpg" alt=""></div><div class="foto-caption">Aishite</div></div>
+
+    <!-- ══ NOTITA 1 ══ -->
+    <div class="notita" id="notita1" style="margin-bottom:40px;">
+      <div class="notita-inner">
+        Antes de que llegues a las fotos… quiero que sepas que cada una de ellas tiene un pedacito de lo que siento por ti. No son solo recuerdos. Son pruebas.
+        <div class="notita-firma">— J 💜</div>
+      </div>
+    </div>
+    <div class="ornamento sep-floral" id="orn0" style="margin-bottom:32px;">❧</div>
+
+    <!-- VIDEO 1 -->
+    <div class="seccion-videos" id="seccionVideos" style="margin-bottom:48px;">
+      <div class="videos-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="video-slot vertical"><video src="video1.MOV" loop playsinline muted></video></div>
+        <div class="video-slot vertical"><video src="video2.mp4" loop playsinline muted></video></div>
+      </div>
+    </div>
+    <div class="ornamento sep-floral" id="orn1" style="margin-bottom:32px;">♡</div>
+
+    <!-- ══ NOTITA 2 ══ -->
+    <div class="notita" id="notita2" style="margin-bottom:40px;">
+      <div class="notita-inner">
+        Miro estos videos y me doy cuenta de lo mucho que me gusta cómo te ríes. Esa risa tuya… es de las cosas que más quiero en el mundo.
+        <div class="notita-firma">— F 💜</div>
+      </div>
+    </div>
+    <div class="ornamento sep-floral" id="orn2" style="margin-bottom:32px;">❧</div>
+
+    <!-- VIDEO 2 -->
+    <div class="seccion-videos" id="seccionVideos2" style="margin-bottom:48px;">
+      <div class="videos-grid">
+        <div class="video-slot grande"><video src="video3.MOV" loop playsinline muted></video></div>
+      </div>
+    </div>
+    <div class="ornamento sep-floral" id="orn3" style="margin-bottom:32px;">♡</div>
+
+    <!-- ══ NOTITA 3 ══ -->
+    <div class="notita" id="notita3" style="margin-bottom:40px;">
+      <div class="notita-inner">
+        Hay días en que no sé cómo decirte lo que siento. Así que lo escribo. Y aun así siento que las palabras se quedan cortas.
+        <div class="notita-firma">— Hurtado 💜</div>
+      </div>
+    </div>
+    <div class="ornamento sep-floral" id="orn3b" style="margin-bottom:32px;">❧</div>
+
+    <!-- VIDEO 3 -->
+    <div class="seccion-videos" id="seccionVideos3" style="margin-bottom:48px;">
+      <div class="videos-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="video-slot vertical"><video src="video4.mp4" loop playsinline muted></video></div>
+        <div class="video-slot vertical"><video src="video5.mov" loop playsinline muted></video></div>
+      </div>
+    </div>
+    <div class="ornamento sep-floral" id="orn4" style="margin-bottom:32px;">♡</div>
+
+    <!-- ══ NOTITA 4 ══ -->
+    <div class="notita" id="notita4" style="margin-bottom:40px;">
+      <div class="notita-inner">
+        Si pudiese elegir cualquier lugar del mundo para estar ahora mismo… elegiría donde estés tú. Sin dudarlo ni un segundo.
+        <div class="notita-firma">— Fernando 💜</div>
+      </div>
+    </div>
+    <div class="ornamento sep-floral" id="orn4b" style="margin-bottom:32px;">❧</div>
+
+    <!-- ══ NOTITA 5 ══ -->
+    <div class="notita" id="notita5" style="margin-bottom:48px;">
+      <div class="notita-inner">
+        Y ahora sí… llegó el momento. La carta de verdad. La que escribí con todo lo que tengo.
+        <br>Léela despacio, ¿sí?
+        <div class="notita-firma">— Jair 💜</div>
+      </div>
+    </div>
+    <div class="ornamento sep-floral" id="orn5" style="margin-bottom:40px;">✦</div>
+
+    <!-- ══ HOJA AL FINAL ══ -->
+    <div class="hoja" id="hoja">
+      <div class="hoja-inner">
+        <!-- esquinas decorativas SVG -->
+        <svg class="hoja-deco-tl" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 46 C2 26 22 2 46 2" stroke="#a888d0" stroke-width="1.2" fill="none"/>
+          <circle cx="6" cy="42" r="2" fill="#a888d0"/>
+          <circle cx="42" cy="6" r="2" fill="#a888d0"/>
+          <path d="M12 36 Q18 18 36 12" stroke="#c4aef0" stroke-width="0.7" fill="none" stroke-dasharray="2 3"/>
+          <circle cx="24" cy="24" r="1.2" fill="#c4aef0"/>
+        </svg>
+        <svg class="hoja-deco-tr" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 46 C2 26 22 2 46 2" stroke="#a888d0" stroke-width="1.2" fill="none"/>
+          <circle cx="6" cy="42" r="2" fill="#a888d0"/>
+          <circle cx="42" cy="6" r="2" fill="#a888d0"/>
+          <path d="M12 36 Q18 18 36 12" stroke="#c4aef0" stroke-width="0.7" fill="none" stroke-dasharray="2 3"/>
+          <circle cx="24" cy="24" r="1.2" fill="#c4aef0"/>
+        </svg>
+        <svg class="hoja-deco-bl" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 46 C2 26 22 2 46 2" stroke="#a888d0" stroke-width="1.2" fill="none"/>
+          <circle cx="6" cy="42" r="2" fill="#a888d0"/>
+          <circle cx="42" cy="6" r="2" fill="#a888d0"/>
+          <path d="M12 36 Q18 18 36 12" stroke="#c4aef0" stroke-width="0.7" fill="none" stroke-dasharray="2 3"/>
+          <circle cx="24" cy="24" r="1.2" fill="#c4aef0"/>
+        </svg>
+        <svg class="hoja-deco-br" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 46 C2 26 22 2 46 2" stroke="#a888d0" stroke-width="1.2" fill="none"/>
+          <circle cx="6" cy="42" r="2" fill="#a888d0"/>
+          <circle cx="42" cy="6" r="2" fill="#a888d0"/>
+          <path d="M12 36 Q18 18 36 12" stroke="#c4aef0" stroke-width="0.7" fill="none" stroke-dasharray="2 3"/>
+          <circle cx="24" cy="24" r="1.2" fill="#c4aef0"/>
+        </svg>
+        <!-- sello de cera -->
+        <div class="sello-cera">♡</div>
+        <!-- marca de agua floral -->
+        <div class="hoja-watermark">❀</div>
+        <div class="carta-fecha">17/05/2026</div>
+        <div class="carta-saludo">Aishite...</div>
+        <div class="carta-parrafo">
+          <div class="p-bloque">Al parecer llegamos al final… y, al mismo tiempo, al inicio oficial. Puede sonar un poco triste, o tal vez bonito, dependiendo de cómo lo veamos. Pero si soy sincero, para mí fue algo increíble.</div><br>
+          <div class="p-bloque">Todo este proceso fue especial. La incertidumbre de no saber exactamente el día, de no saber qué diría cada carta, de quedarme en blanco… y luego encontrar inspiración simplemente viendo tu carita. Momentos de correr para escribir, de desvelarme programando la página… incluso mentirte un poco sobre ella, pero todo con un solo propósito: llegar hasta aquí.</div><br>
+          <div class="p-bloque">Recuerdo perfectamente cuando planeé todo esto. Estaba en el trabajo y pensé: "es alguien que quiero en mi vida para siempre… tengo que hacer que el inicio sea especial". Y ahí empezó todo. Hubo muchas ideas que descarté, pero al final, esto fue lo que nació… y no me arrepiento de nada.</div><br>
+          <div class="p-bloque">Nuestra relación ha sido, cuanto menos, curiosa. No ha sido perfecta ni tranquila todo el tiempo… hemos tenido nuestros momentos, nuestros choques, nuestras dudas. Y probablemente seguirán existiendo. Pero una relación real no es perfecta, no es solo color de rosas. Tiene momentos difíciles… para que los momentos buenos brillen aún más.</div><br>
+          <div class="p-bloque">Cada vez que superamos algo, nos volvemos más fuertes. Más nosotros. Y eso es lo que realmente importa.</div><br>
+          <div class="p-bloque">No quiero que esto termine nunca. Pase lo que pase, quiero arreglarlo todo contigo, siempre. Sin dejar que nada ni nadie nos separe.</div><br>
+          <div class="p-bloque">Quiero vivir todo contigo… casarnos, tener hijos, construir una vida, envejecer juntos… y quedarnos uno al lado del otro hasta el final. Porque no hay nadie como tú, ni la habrá. No hay nadie a quien ame como te amo a ti.</div><br>
+          <div class="p-bloque">Y aunque te lo haya dicho mil veces, nunca me voy a cansar de repetirlo:</div><br>
+          <div class="p-bloque">Tú, Glendis Vanessa Rocha Tercero… eres el amor de mi vida. Eres la melodía más hermosa que he escuchado.</div><br>
+          <div class="p-bloque">Así que sin más rodeos, aquí va la pregunta que lleva escondida en cada línea de esta carta, en cada foto que pusiste, en cada video que viste llegar hasta aquí:</div><br>
+          <div class="p-bloque" style="font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--morado-deep);font-style:italic;">¿<span id="preguntaOculta" class="pregunta-invisible">quieres ser mi novia</span>?</div><br>
+          <div class="p-bloque linea-perfecta">Aunque para mí ya eres <span class="blank-wrap"><input type="text" id="inputPerfecta" placeholder="_ _ _ _ _ _ _ _" maxlength="20" autocomplete="off" spellcheck="false"></span>.</div>
+        </div>
+        <div class="carta-firma">Jair 💜<span></span></div>
+      </div>
+    </div>
+
+    <!-- PREGUNTA -->
+    <div class="seccion-pregunta" id="seccionPregunta" style="margin-top:48px;">
+      <div class="pregunta-marco">
+        <span class="deco-heart" style="top:22px;left:22px;">💜</span>
+        <span class="deco-heart" style="top:22px;right:22px;">💜</span>
+        <span class="deco-heart" style="bottom:22px;left:22px;">💜</span>
+        <span class="deco-heart" style="bottom:22px;right:22px;">💜</span>
+        <span class="deco-heart" style="top:50%;left:18px;transform:translateY(-50%);">💜</span>
+        <span class="deco-heart" style="top:50%;right:18px;transform:translateY(-50%);">💜</span>
+        <span class="pregunta-deco-top">✦ ♡ ✦</span>
+        <div class="pregunta-texto">¿Quieres ser<br>mi novia?</div>
+        <div class="pregunta-botonesw">
+          <button class="btn-si" id="btnSi">Sí 💜</button>
+          <button class="btn-no" id="btnNo">todavía no</button>
+        </div>
+      </div>
+    </div>
+    <div style="height:100px;"></div>
+  </div>
+</div>
+
+<script>
+/* ══ DOM ══ */
+const card            = document.getElementById("card");
+const flap            = document.getElementById("flap");
+const cartaBorde      = document.getElementById("cartaBorde");
+const scene           = document.getElementById("scene");
+const wrap            = document.getElementById("wrap");
+const hojaOverlay     = document.getElementById("hojaOverlay");
+const hojaAnim        = document.getElementById("hojaAnim");
+const paginaCarta     = document.getElementById("paginaCarta");
+const hojaEl          = document.getElementById("hoja");
+const lbOverlay       = document.getElementById("lbOverlay");
+const lbImg           = document.getElementById("lbImg");
+const lbCaption       = document.getElementById("lbCaption");
+const btnSi           = document.getElementById("btnSi");
+const btnNo           = document.getElementById("btnNo");
+const siCerrar        = document.getElementById("siCerrar");
+const siUniverse      = document.getElementById("siUniverse");
+const siStars         = document.getElementById("siStars");
+const inputPerfecta   = document.getElementById("inputPerfecta");
+const seccionPregunta = document.getElementById("seccionPregunta");
+const preguntaOculta  = document.getElementById("preguntaOculta");
+
+/* ══ AUDIO ══ */
+/*
+  Archivos en la misma carpeta:
+  music1.mp3  → suena al abrir la carta (loop, volumen máximo)
+  music2.mp3  → suena después del "Sí" (loop, volumen máximo)
+  sfx_yes.mp3 → efecto al presionar "Sí 💜"
+*/
+const bgMusic1 = new Audio("music1.mp3");
+bgMusic1.loop = true; bgMusic1.volume = 1;
+const bgMusic2 = new Audio("music2.mp3");
+bgMusic2.loop = true; bgMusic2.volume = 1;
+const sfxYes = new Audio("sfx_yes.mp3");
+sfxYes.volume = 1;
+
+let musicStarted = false;
+function iniciarMusica() {
+  if (musicStarted) return;
+  musicStarted = true;
+  bgMusic1.play().catch(() => {});
+}
+function cambiarAMusicaNovia() {
+  const fade = setInterval(() => {
+    if (bgMusic1.volume > 0.04) { bgMusic1.volume = Math.max(0, bgMusic1.volume - 0.05); }
+    else { bgMusic1.pause(); bgMusic1.volume = 0; clearInterval(fade);
+      bgMusic2.volume = 0; bgMusic2.play().catch(() => {});
+      const fi = setInterval(() => {
+        if (bgMusic2.volume < 0.96) bgMusic2.volume = Math.min(1, bgMusic2.volume + 0.04);
+        else { bgMusic2.volume = 1; clearInterval(fi); }
+      }, 50);
+    }
+  }, 50);
+}
+
+/* ══ SOBRE ══ */
+let flapAbierta = false, bordeVisible = false, preguntaRevelada = false;
+
+flap.addEventListener("click", e => {
+  e.stopPropagation();
+  if (!flapAbierta) { flap.classList.add("animando","abierta"); flapAbierta = true;
+    const hint = document.getElementById("sobreHint");
+    if(hint) hint.style.opacity="0";
+    setTimeout(() => { cartaBorde.classList.add("asomada"); bordeVisible = true; }, 850); }
+});
+
+cartaBorde.addEventListener("click", e => {
+  e.stopPropagation();
+  if (!bordeVisible) return;
+  scene.classList.add("oculto");
+  setTimeout(() => {
+    wrap.style.display = "none";
+    document.body.classList.add("carta-abierta");
+    hojaOverlay.classList.add("activa");
+    requestAnimationFrame(() => requestAnimationFrame(() => hojaAnim.classList.add("expandir")));
+  }, 500);
+  setTimeout(() => {
+    hojaOverlay.style.display = "none";
+    paginaCarta.classList.add("visible");
+    // Activar decoraciones de la página carta
+    document.getElementById("cartaTopbar").classList.add("visible");
+    document.getElementById("lateralIzq").classList.add("visible");
+    document.getElementById("lateralDer").classList.add("visible");
+    // Ocultar elementos del sobre
+    document.querySelectorAll(".sobre-corner,.sobre-linea,.sobre-titulo,.sobre-hint").forEach(el=>el.style.display="none");
+    iniciarObservers(); iniciarPetalos(); iniciarCorazones();
+    setTimeout(reproducirVideos, 800);
+    iniciarMusica();
+  }, 1400);
+});
+
+card.addEventListener("click", () => { if (!flapAbierta) card.classList.toggle("girada"); });
+
+/* ══ VIDEOS ══ */
+function reproducirVideos() {
+  const obsV = new IntersectionObserver(entries => {
+    entries.forEach(en => { if (en.isIntersecting) { en.target.muted = true; en.target.play().catch(() => {}); } });
+  }, { threshold: 0.15 });
+  document.querySelectorAll(".video-slot video").forEach(v => { v.muted = true; obsV.observe(v); });
+}
+
+/* ══ INPUT PERFECTA ══ */
+inputPerfecta.addEventListener("input", () => {
+  if (inputPerfecta.value.trim().toUpperCase() === "PERFECTA" && !preguntaRevelada) {
+    preguntaRevelada = true;
+    inputPerfecta.value = "PERFECTA";
+    inputPerfecta.classList.add("correcto");
+    inputPerfecta.readOnly = true;
+    preguntaOculta.classList.add("revelada");
+    const flash = document.createElement("div"); flash.className = "flash-corazon";
+    document.body.appendChild(flash); setTimeout(() => flash.remove(), 900);
+    for (let i = 0; i < 30; i++) setTimeout(() => {
+      const c = document.createElement("div"); c.className = "confeti";
+      c.textContent = ["💜","✨","🌸","💫"][Math.floor(Math.random()*4)];
+      c.style.left = (Math.random()*100)+"vw"; c.style.top = "-20px";
+      c.style.fontSize = (10+Math.random()*14)+"px";
+      c.style.animationDuration = (2.5+Math.random()*2)+"s";
+      document.body.appendChild(c); setTimeout(() => c.remove(), 6000);
+    }, i * 80);
+    setTimeout(() => {
+      seccionPregunta.scrollIntoView({behavior:"smooth",block:"center"});
+      setTimeout(() => seccionPregunta.classList.add("revelando"), 700);
+    }, 400);
+  }
+});
+
+/* ══ BOTONES ══ */
+btnNo.addEventListener("mouseenter", () => {
+  const maxX = window.innerWidth-160, maxY = window.innerHeight-60;
+  btnNo.style.position = "fixed"; btnNo.style.zIndex = 800;
+  btnNo.style.left = Math.random()*maxX+"px"; btnNo.style.top = Math.random()*maxY+"px";
+  btnNo.style.transition = "left 0.3s ease,top 0.3s ease";
+});
+btnNo.addEventListener("click", () => {
+  const maxX = window.innerWidth-160, maxY = window.innerHeight-60;
+  btnNo.style.left = Math.random()*maxX+"px"; btnNo.style.top = Math.random()*maxY+"px";
+});
+
+btnSi.addEventListener("click", () => {
+  btnNo.style.position = ""; btnNo.style.left = ""; btnNo.style.top = "";
+  sfxYes.currentTime = 0; sfxYes.play().catch(() => {});
+  // Cambiar BPM de fotos a 95
+  document.documentElement.style.setProperty("--beat-dur", "0.632s");
+  // Resetear todas las animaciones de beat para re-sincronizar
+  document.querySelectorAll(".foto-img.beating").forEach(el => {
+    el.style.animation = "none";
+    el.offsetHeight; // reflow
+    el.style.animation = "";
+    el.style.animationDelay = "0s";
+  });
+  setTimeout(cambiarAMusicaNovia, 800);
+  abrirUniversoSi();
+});
+
+/* ══ UNIVERSO DEL SÍ ══ */
+function abrirUniversoSi() {
+  // Generar estrellas
+  siStars.innerHTML = "";
+  for (let i = 0; i < 200; i++) {
+    const s = document.createElement("div"); s.className = "si-star";
+    const size = 1 + Math.random() * 3;
+    s.style.cssText = `
+      width:${size}px;height:${size}px;
+      left:${Math.random()*100}%;top:${Math.random()*100}%;
+      animation-duration:${2+Math.random()*4}s;
+      animation-delay:-${Math.random()*4}s;
+      opacity:${0.3+Math.random()*0.7};
+    `;
+    siStars.appendChild(s);
+  }
+  siUniverse.classList.add("activo");
+  document.body.style.overflow = "hidden";
+
+  // Lluvia continua de corazones
+  const heartInterval = setInterval(() => {
+    if (!siUniverse.classList.contains("activo")) { clearInterval(heartInterval); return; }
+    const h = document.createElement("div"); h.className = "si-heart-fly";
+    h.textContent = ["💜","💫","✨","🌸","💕","✦"][Math.floor(Math.random()*6)];
+    h.style.left = (5 + Math.random()*90) + "vw";
+    h.style.bottom = "-20px";
+    h.style.fontSize = (12 + Math.random()*20) + "px";
+    h.style.animationDuration = (4 + Math.random()*5) + "s";
+    siUniverse.appendChild(h);
+    setTimeout(() => h.remove(), 9000);
+  }, 220);
+}
+
+siCerrar.addEventListener("click", () => {
+  siUniverse.classList.remove("activo");
+  document.body.style.overflow = "";
+});
+siUniverse.addEventListener("click", e => {
+  if (e.target === siUniverse) { siUniverse.classList.remove("activo"); document.body.style.overflow = ""; }
+});
+
+/* ══ OBSERVERS ══ */
+function iniciarObservers() {
+  const obsF = new IntersectionObserver(entries => {
+    entries.forEach(en => { if (en.isIntersecting) setTimeout(() => {
+        en.target.classList.add("visible");
+        // Beat en foto-img con delay 0 — sincronizado globalmente
+        const img = en.target.querySelector(".foto-img");
+        if(img) { img.classList.add("beating"); img.style.animationDelay = "0s"; }
+      }, 60); });
+  }, {threshold:0.1,rootMargin:"0px 0px -30px 0px"});
+  document.querySelectorAll(".foto").forEach(f => {
+    obsF.observe(f);
+    f.addEventListener("click", e => {
+      e.stopPropagation();
+      lbImg.src = f.querySelector("img").src;
+      lbCaption.textContent = f.dataset.caption || "";
+      lbOverlay.classList.add("activo");
+    });
+  });
+  const obsH = new IntersectionObserver(entries => {
+    entries.forEach(en => { if (en.isIntersecting) { hojaEl.classList.add("visible"); setTimeout(() => hojaEl.classList.add("revelada"), 200); } });
+  }, {threshold:0.1});
+  obsH.observe(hojaEl);
+  const obsEl = new IntersectionObserver(entries => {
+    entries.forEach(en => { if (en.isIntersecting) en.target.classList.add("visible"); });
+  }, {threshold:0.1,rootMargin:"0px 0px -20px 0px"});
+  ["notita1","notita2","notita3","notita4","notita5",
+   "orn0","orn1","orn2","orn3","orn3b","orn4","orn4b","orn5",
+   "seccionVideos","seccionVideos2","seccionVideos3","cartaTopbar"].forEach(id => {
+    const el = document.getElementById(id); if (el) obsEl.observe(el);
+  });
+  lbOverlay.addEventListener("click", e => { if (e.target === lbOverlay) lbOverlay.classList.remove("activo"); });
+}
+
+/* ══ PARTÍCULAS AMBIENTALES ══ */
+function iniciarPetalos() {
+  const s = ["✿","❀","✾","❁","🌸","🌷"];
+  setInterval(() => {
+    const p = document.createElement("div"); p.className = "petal";
+    p.textContent = s[Math.floor(Math.random()*s.length)];
+    p.style.left = (Math.random()*100)+"vw"; p.style.top = "-20px";
+    p.style.fontSize = (9+Math.random()*10)+"px";
+    p.style.animationDuration = (9+Math.random()*8)+"s";
+    document.body.appendChild(p); setTimeout(() => p.remove(), 20000);
+  }, 1400);
+}
+function iniciarCorazones() {
+  setInterval(() => {
+    const h = document.createElement("div"); h.className = "heart-float"; h.textContent = "💜";
+    h.style.left = (5+Math.random()*90)+"vw"; h.style.bottom = "0";
+    h.style.fontSize = (9+Math.random()*12)+"px";
+    h.style.animationDuration = (7+Math.random()*6)+"s";
+    document.body.appendChild(h); setTimeout(() => h.remove(), 15000);
+  }, 2000);
+}
+function crearCorazon() {
+  const c = document.createElement("div"); c.classList.add("corazon-sobre"); c.innerHTML = "💜";
+  c.style.left = (Math.random()*95)+"%"; c.style.fontSize = (15+Math.random()*25)+"px";
+  c.style.animationDuration = (5+Math.random()*5)+"s";
+  const cont = wrap.style.display === "none" ? document.body : wrap;
+  cont.appendChild(c); setTimeout(() => c.remove(), 10000);
+}
+setInterval(crearCorazon, 300);
+</script>
+</body>
+</html>
