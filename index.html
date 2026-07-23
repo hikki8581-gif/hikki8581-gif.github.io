@@ -909,43 +909,70 @@ sfxYes.volume = 1;
 
 let musicStarted = false;
 let audioUnlocked = false;
+
+/*
+  FIX iOS/Safari: iOS ignora por completo los cambios de `.volume` en
+  <audio> (siempre se lee como 1), así que silenciar con volume=0 no
+  sirve para "desbloquear" el audio sin que se oiga — en iPhone sonaban
+  las 3 pistas a la vez al tocar la solapa del sobre. La propiedad
+  `.muted` sí funciona en iOS, así que la usamos para el desbloqueo
+  silencioso en vez de `.volume`.
+*/
 function desbloquearAudio() {
   if (audioUnlocked) return;
   audioUnlocked = true;
   [bgMusic1, bgMusic2, sfxYes].forEach(a => {
-    const prevVol = a.volume;
-    a.volume = 0;
-    a.play().then(() => {
-      a.pause();
-      a.currentTime = 0;
-      a.volume = prevVol;
-    }).catch(() => { a.volume = prevVol; });
+    a.muted = true;
+    const p = a.play();
+    const finalizar = () => { a.pause(); a.currentTime = 0; a.muted = false; };
+    if (p && typeof p.then === "function") { p.then(finalizar).catch(finalizar); }
+    else { finalizar(); }
   });
 }
+
 function iniciarMusica() {
   if (musicStarted) return;
   musicStarted = true;
   bgMusic1.play().catch(() => {});
 }
+
+/*
+  FIX iOS/Safari: antes se esperaba a que bgMusic1.volume bajara de 0.04
+  para recién pausarla. En iOS `.volume` nunca cambia (siempre 1), así
+  que esa condición nunca se cumplía y bgMusic1 seguía sonando para
+  siempre debajo de bgMusic2. Ahora el cambio es por tiempo (rAF) y al
+  terminar se fuerza `bgMusic1.pause()` sin depender del valor de volumen,
+  así que en iOS igual se corta (solo que sin fundido audible), y en
+  desktop/Android sigue habiendo un fundido cruzado suave.
+*/
 function cambiarAMusicaNovia() {
-  // bgMusic2.play() is called synchronously (from the btnSi click handler,
-  // via prepararMusicaNovia) so mobile browsers treat it as a trusted
-  // user-gesture play. Here we just handle the crossfade.
-  const fade = setInterval(() => {
-    if (bgMusic1.volume > 0.04) { bgMusic1.volume = Math.max(0, bgMusic1.volume - 0.05); }
-    else { bgMusic1.pause(); bgMusic1.volume = 0; clearInterval(fade);
-      const fi = setInterval(() => {
-        if (bgMusic2.volume < 0.96) bgMusic2.volume = Math.min(1, bgMusic2.volume + 0.04);
-        else { bgMusic2.volume = 1; clearInterval(fi); }
-      }, 50);
+  const duracion = 900; // ms
+  const inicio = performance.now();
+
+  function paso(ts) {
+    const t = Math.min(1, (ts - inicio) / duracion);
+    bgMusic1.volume = Math.max(0, 1 - t);
+    bgMusic2.volume = Math.min(1, t);
+    if (t < 1) {
+      requestAnimationFrame(paso);
+    } else {
+      // Se fuerza el estado final pase lo que pase con el volumen
+      // (en iOS el fundido no se oye, pero el corte sí ocurre).
+      bgMusic1.pause();
+      bgMusic1.currentTime = 0;
+      bgMusic1.volume = 0;
+      bgMusic2.volume = 1;
     }
-  }, 50);
+  }
+  requestAnimationFrame(paso);
 }
+
 function prepararMusicaNovia() {
-  // Called synchronously inside the "Sí" click so the browser counts
-  // this play() as triggered by a real user gesture.
-  bgMusic2.volume = 0;
+  // Se llama de forma síncrona dentro del click de "Sí" para que el
+  // navegador cuente este play() como iniciado por un gesto real del
+  // usuario (necesario en iOS).
   bgMusic2.currentTime = 0;
+  bgMusic2.volume = 0;
   bgMusic2.play().catch(() => {});
 }
 
