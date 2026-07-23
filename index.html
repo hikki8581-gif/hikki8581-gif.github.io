@@ -26,7 +26,14 @@ body.carta-abierta::before{content:'';position:fixed;inset:0;background-image:ra
 .scene.oculto{opacity:0;pointer-events:none;transform:scale(0.95);}
 .card{width:100%;height:100%;position:relative;transform-style:preserve-3d;-webkit-transform-style:preserve-3d;transition:transform 1s ease;will-change:transform;}
 .card.girada{transform:rotateY(180deg);-webkit-transform:rotateY(180deg);}
-.face{position:absolute;width:100%;height:100%;top:0;left:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:6px;box-shadow:0 25px 60px rgba(0,0,0,0.5);}
+.face{position:absolute;width:100%;height:100%;top:0;left:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:6px;box-shadow:0 25px 60px rgba(0,0,0,0.5);opacity:1;transition:opacity 0s linear 0.5s;}
+/* Fallback for browsers that mis-render backface-visibility (common on mobile):
+   force the non-facing side to opacity:0, switching exactly at the flip's
+   halfway point (when the card is edge-on and invisible anyway), so the
+   wrong face can never show through, on any device. */
+.face.back{opacity:0;}
+.card.girada .face.front{opacity:0;}
+.card.girada .face.back{opacity:1;}
 .front{background:var(--lila-mid);overflow:hidden;}
 .flap{position:absolute;top:0;left:0;width:100%;height:160px;background:var(--lila-dark);clip-path:ellipse(50% 100% at 50% 0%);transform-origin:top center;z-index:5;cursor:pointer;}
 .flap.animando{transition:transform 0.8s ease;}
@@ -67,7 +74,7 @@ body.carta-abierta::before{content:'';position:fixed;inset:0;background-image:ra
 /* PÁGINA */
 .pagina-carta{display:none;padding:60px 0 200px;position:relative;z-index:1;}
 .pagina-carta.visible{display:block;}
-.carta-outer{width:1260px;max-width:100vw;margin:0 auto;position:relative;}
+.carta-outer{width:1260px;margin:0 auto;position:relative;}
 
 /* FOTOS */
 .foto{position:absolute;cursor:pointer;opacity:0;z-index:3;transition:opacity 1s ease;}
@@ -79,18 +86,18 @@ body.carta-abierta::before{content:'';position:fixed;inset:0;background-image:ra
 .foto-caption{text-align:center;font-family:'Cormorant Garamond',serif;font-size:11px;color:var(--morado-muted);margin-top:7px;font-style:italic;}
 
 /* NOTITAS */
-.notita{width:700px;max-width:92vw;margin:0 auto;opacity:0;transform:translateY(14px);transition:opacity 1s ease,transform 1s ease;position:relative;z-index:2;}
+.notita{width:700px;margin:0 auto;opacity:0;transform:translateY(14px);transition:opacity 1s ease,transform 1s ease;position:relative;z-index:2;}
 .notita.visible{opacity:1;transform:none;}
 .notita-inner{background:#fff;border-radius:6px;padding:32px 44px;box-shadow:0 4px 30px rgba(100,60,180,0.1);border-left:3px solid var(--lila-dark);font-family:'Cormorant Garamond',serif;font-size:19px;font-style:italic;color:var(--morado-deep);line-height:1.75;position:relative;}
 .notita-inner::before{content:'✦';position:absolute;top:12px;right:18px;font-size:13px;color:var(--lila-dark);opacity:0.6;}
 .notita-firma{text-align:right;font-size:14px;color:var(--morado-muted);margin-top:12px;font-style:normal;letter-spacing:0.04em;}
 
 /* ORNAMENTOS */
-.ornamento{width:700px;max-width:92vw;margin:0 auto;text-align:center;font-family:'Cormorant Garamond',serif;color:var(--morado-muted);font-size:18px;letter-spacing:0.3em;opacity:0;padding:24px 0;transition:opacity 1s ease;}
+.ornamento{width:700px;margin:0 auto;text-align:center;font-family:'Cormorant Garamond',serif;color:var(--morado-muted);font-size:18px;letter-spacing:0.3em;opacity:0;padding:24px 0;transition:opacity 1s ease;}
 .ornamento.visible{opacity:1;}
 
 /* VIDEOS */
-.seccion-videos{width:700px;max-width:92vw;margin:0 auto;opacity:0;transform:translateY(16px);transition:opacity 1s ease,transform 1s ease;}
+.seccion-videos{width:700px;margin:0 auto;opacity:0;transform:translateY(16px);transition:opacity 1s ease,transform 1s ease;}
 .seccion-videos.visible{opacity:1;transform:none;}
 .videos-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
 .video-slot{position:relative;background:#fff;border-radius:6px;border:1px solid var(--lila-dark);overflow:hidden;box-shadow:0 4px 20px rgba(100,60,180,0.08);}
@@ -99,7 +106,7 @@ body.carta-abierta::before{content:'';position:fixed;inset:0;background-image:ra
 .video-slot.grande{aspect-ratio:16/9;grid-column:1/-1;}
 
 /* HOJA CARTA */
-.hoja{width:700px;max-width:92vw;margin:0 auto;background:#fff;border-radius:3px;box-shadow:0 2px 80px rgba(100,60,180,0.1);padding:64px 72px 88px 92px;position:relative;z-index:2;border-left:1.5px solid var(--rosa);opacity:0;transform:translateY(20px);transition:opacity 1.2s ease,transform 1.2s ease;}
+.hoja{width:700px;margin:0 auto;background:#fff;border-radius:3px;box-shadow:0 2px 80px rgba(100,60,180,0.1);padding:64px 72px 88px 92px;position:relative;z-index:2;border-left:1.5px solid var(--rosa);opacity:0;transform:translateY(20px);transition:opacity 1.2s ease,transform 1.2s ease;}
 .hoja.visible{opacity:1;transform:none;}
 .hoja::before{content:'♡';position:absolute;bottom:60px;right:50px;font-size:200px;color:var(--lila-mid);opacity:0.18;line-height:1;pointer-events:none;font-family:'Cormorant Garamond',serif;}
 .hoja-inner{position:relative;background-image:repeating-linear-gradient(to bottom,transparent 0px,transparent 38px,#e8d8f8 38px,#e8d8f8 39px);background-position:0 55px;}
@@ -127,7 +134,7 @@ body.carta-abierta::before{content:'';position:fixed;inset:0;background-image:ra
 #inputPerfecta.correcto{border-color:var(--morado);color:var(--morado);font-weight:400;}
 
 /* PREGUNTA */
-.seccion-pregunta{width:700px;max-width:92vw;margin:0 auto;opacity:0;transform:scale(0.6) translateY(40px);pointer-events:none;transition:none;}
+.seccion-pregunta{width:700px;margin:0 auto;opacity:0;transform:scale(0.6) translateY(40px);pointer-events:none;transition:none;}
 .seccion-pregunta.revelando{animation:preguntaReveal 1.2s cubic-bezier(0.16,1,0.3,1) forwards;pointer-events:auto;}
 @keyframes preguntaReveal{0%{opacity:0;transform:scale(0.6) translateY(40px);}40%{opacity:1;}100%{opacity:1;transform:scale(1) translateY(0);}}
 .pregunta-marco{position:relative;background:#fff;border-radius:12px;padding:60px 48px 56px;box-shadow:0 8px 60px rgba(100,60,180,0.12);border:1px solid rgba(196,174,240,0.4);overflow:hidden;}
@@ -504,7 +511,7 @@ body.carta-abierta{
 
 /* Separadores de sección más elegantes — ornamento entre notitas */
 .sep-floral{
-  width:700px;max-width:92vw;margin:0 auto;
+  width:700px;margin:0 auto;
   text-align:center;
   font-family:'Cormorant Garamond',serif;
   color:var(--morado-muted);
@@ -533,13 +540,6 @@ body.carta-abierta{
 /* Sombra más bonita en fotos */
 .foto-img img{
   filter:brightness(1.02) contrast(1.02);
-}
-
-/* ══ RESPONSIVE: fotos laterales se ocultan en pantallas angostas ══ */
-@media (max-width: 900px){
-  .foto{ display:none; }
-  .carta-outer{ width:100%; }
-  .carta-lateral{ display:none; }
 }
 </style>
 </head>
@@ -1157,5 +1157,4 @@ function crearCorazon() {
 setInterval(crearCorazon, 300);
 </script>
 </body>
-</html>
 </html>
