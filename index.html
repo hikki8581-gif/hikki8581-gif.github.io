@@ -908,16 +908,32 @@ const sfxYes = new Audio("sfx_yes.mp3");
 sfxYes.volume = 1;
 
 let musicStarted = false;
+let audioUnlocked = false;
+function desbloquearAudio() {
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+  [bgMusic1, bgMusic2, sfxYes].forEach(a => {
+    const prevVol = a.volume;
+    a.volume = 0;
+    a.play().then(() => {
+      a.pause();
+      a.currentTime = 0;
+      a.volume = prevVol;
+    }).catch(() => { a.volume = prevVol; });
+  });
+}
 function iniciarMusica() {
   if (musicStarted) return;
   musicStarted = true;
   bgMusic1.play().catch(() => {});
 }
 function cambiarAMusicaNovia() {
+  // bgMusic2.play() is called synchronously (from the btnSi click handler,
+  // via prepararMusicaNovia) so mobile browsers treat it as a trusted
+  // user-gesture play. Here we just handle the crossfade.
   const fade = setInterval(() => {
     if (bgMusic1.volume > 0.04) { bgMusic1.volume = Math.max(0, bgMusic1.volume - 0.05); }
     else { bgMusic1.pause(); bgMusic1.volume = 0; clearInterval(fade);
-      bgMusic2.volume = 0; bgMusic2.play().catch(() => {});
       const fi = setInterval(() => {
         if (bgMusic2.volume < 0.96) bgMusic2.volume = Math.min(1, bgMusic2.volume + 0.04);
         else { bgMusic2.volume = 1; clearInterval(fi); }
@@ -925,12 +941,20 @@ function cambiarAMusicaNovia() {
     }
   }, 50);
 }
+function prepararMusicaNovia() {
+  // Called synchronously inside the "Sí" click so the browser counts
+  // this play() as triggered by a real user gesture.
+  bgMusic2.volume = 0;
+  bgMusic2.currentTime = 0;
+  bgMusic2.play().catch(() => {});
+}
 
 /* ══ SOBRE ══ */
 let flapAbierta = false, bordeVisible = false, preguntaRevelada = false;
 
 flap.addEventListener("click", e => {
   e.stopPropagation();
+  desbloquearAudio();
   if (!flapAbierta) { flap.classList.add("animando","abierta"); flapAbierta = true;
     const hint = document.getElementById("sobreHint");
     if(hint) hint.style.opacity="0";
@@ -939,6 +963,7 @@ flap.addEventListener("click", e => {
 
 cartaBorde.addEventListener("click", e => {
   e.stopPropagation();
+  desbloquearAudio();
   if (!bordeVisible) return;
   scene.classList.add("oculto");
   setTimeout(() => {
@@ -1012,6 +1037,7 @@ btnNo.addEventListener("click", () => {
 btnSi.addEventListener("click", () => {
   btnNo.style.position = ""; btnNo.style.left = ""; btnNo.style.top = "";
   sfxYes.currentTime = 0; sfxYes.play().catch(() => {});
+  prepararMusicaNovia();
   // Cambiar BPM de fotos a 95
   document.documentElement.style.setProperty("--beat-dur", "0.632s");
   // Resetear todas las animaciones de beat para re-sincronizar
@@ -1131,4 +1157,5 @@ function crearCorazon() {
 setInterval(crearCorazon, 300);
 </script>
 </body>
+</html>
 </html>
